@@ -2,19 +2,50 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import Logo from '../components/Logo';
 import tw from 'tailwind-react-native-classnames';
+import DOTSVG from '../assets/dot.svg';
+import FILLEDDOTSVG from '../assets/filledDot.svg';
+import Svg, { G, Path, Circle } from 'react-native-svg';
+import Task from '../components/Task';
 
 const Hero = () => {
   const [list, setList] = useState([
-    { title: 'element1', content: 'this is content 1', completed: false },
-    { title: 'element2', content: 'this is content 2', completed: false },
-    { title: 'element2', content: 'this is content 2', completed: false },
-    { title: 'element2', content: 'this is content 2', completed: false },
-    { title: 'element2', content: 'this is content 2', completed: false },
+    {
+      title: 'element1',
+      content: 'this is content 1',
+      completed: false,
+      id: 0,
+    },
+    {
+      title: 'element2',
+      content: 'this is content 2',
+      completed: false,
+      id: 1,
+    },
+    {
+      title: 'element3',
+      content: 'this is content 2',
+      completed: false,
+      id: 2,
+    },
+    {
+      title: 'element4',
+      content: 'this is content 2',
+      completed: false,
+      id: 3,
+    },
+    {
+      title: 'element5',
+      content: 'this is content 2',
+      completed: false,
+      id: 4,
+    },
   ]);
   const [inputStatus, setInputStatus] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [iscompleted, setIsCompleted] = useState('');
+  const [iscompleted, setIsCompleted] = useState(false);
+  const [id, setId] = useState(0);
+
   function getRandomColor() {
     let colors = ['#D9E8FC', '#FFD8F4', '#FDE99D', '#B0E9CA', '#FFEADD'];
     let color = colors[Math.floor(Math.random() * colors.length)];
@@ -25,6 +56,7 @@ const Hero = () => {
     setInputStatus((prev) => !prev);
   }
   function setElement() {
+    let id = list[list.length].id + 1;
     setList((prevList) => [
       ...prevList,
       {
@@ -36,6 +68,19 @@ const Hero = () => {
     setTitle('');
     setContent('');
     setInputStatus(false);
+  }
+  function taskCompleted(id) {
+    const updatedTasks = list.map((element) =>
+      element.id == id ? { ...element, completed: true } : element,
+    );
+    setList(updatedTasks);
+  }
+  function taskUncompleted(id) {
+    const updatedTasks = list.map((element) =>
+      element.id === id ? { ...element, completed: false } : element,
+    );
+
+    setList(updatedTasks);
   }
   // TODO: add random colors to boxes
   //TODO: on press go to each task and edit
@@ -85,11 +130,11 @@ const Hero = () => {
       <View style={tw`flex flex-row min-w-full flex-wrap justify-around`}>
         {list.map((element) => {
           return (
-            <View style={tw`border-green-600 border-2 m-2 w-32 rounded-lg p-4`}>
-              <View style={tw`flex items-end min-w-full bg-black`}></View>
-              <Text style={tw`pt-2 font-bold`}>{element.title}</Text>
-              <Text>{element.content}</Text>
-            </View>
+            <Task
+              element={element}
+              taskCompleted={taskCompleted}
+              taskUncompleted={taskUncompleted}
+            />
           );
         })}
       </View>
