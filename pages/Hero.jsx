@@ -2,9 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import Logo from '../components/Logo';
 import tw from 'tailwind-react-native-classnames';
-import DOTSVG from '../assets/dot.svg';
-import FILLEDDOTSVG from '../assets/filledDot.svg';
-import Svg, { G, Path, Circle } from 'react-native-svg';
 import Task from '../components/Task';
 
 const Hero = () => {
@@ -23,51 +20,61 @@ const Hero = () => {
     },
     {
       title: 'element3',
-      content: 'this is content 2',
+      content: 'this is content 3',
       completed: false,
       id: 2,
     },
     {
       title: 'element4',
-      content: 'this is content 2',
+      content: 'this is content 4',
       completed: false,
       id: 3,
     },
     {
       title: 'element5',
-      content: 'this is content 2',
+      content: 'this is content ',
       completed: false,
       id: 4,
     },
   ]);
   const [inputStatus, setInputStatus] = useState(false);
   const [title, setTitle] = useState('');
+  const [titlePH, setTitlePH] = useState('Insert title...');
   const [content, setContent] = useState('');
-  const [iscompleted, setIsCompleted] = useState(false);
-  const [id, setId] = useState(0);
+  const [contentPH, setContentPH] = useState('Insert content...');
+  const [isEditing, setIsEditing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
 
-  function getRandomColor() {
-    let colors = ['#D9E8FC', '#FFD8F4', '#FDE99D', '#B0E9CA', '#FFEADD'];
-    let color = colors[Math.floor(Math.random() * colors.length)];
-
-    return color;
+  function editTask(element) {
+    setInputStatus(true);
+    setIsEditing(true);
+    setTitlePH(element.title);
+    setContentPH(element.content);
+    setTitle(element.title);
+    setContent(element.content);
+    setEditingTask(element);
   }
   function addElement() {
     setInputStatus((prev) => !prev);
   }
   function setElement() {
-    let id = list[list.length].id + 1;
-    setList((prevList) => [
-      ...prevList,
-      {
-        title: title + ':',
-        content: content,
-        completed: false,
-      },
-    ]);
-    setTitle('');
-    setContent('');
-    setInputStatus(false);
+    if (content != '') {
+      let taskId = list[list.length - 1].id + 1;
+      setList((prevList) => [
+        ...prevList,
+        {
+          title: title,
+          content: content,
+          completed: false,
+          id: taskId,
+        },
+      ]);
+      setTitle('');
+      setContent('');
+      setInputStatus(false);
+      setErrorMsg(false);
+    } else setErrorMsg(true);
   }
   function taskCompleted(id) {
     const updatedTasks = list.map((element) =>
@@ -84,7 +91,6 @@ const Hero = () => {
   }
   // TODO: add random colors to boxes
   //TODO: on press go to each task and edit
-  // TODO: create element component to be able to edit and make the state hold components
   //TODO: add attributes such as important / personal ... and then filter with each one
   //TODO: add local storage
   //TODO: add types such as list or bullet points
@@ -98,6 +104,8 @@ const Hero = () => {
                 setInputStatus(false);
                 setTitle('');
                 setContent('');
+                setTitlePH('Insert Title...');
+                setContentPH('Insert Content...');
               }}
             >
               <Text
@@ -108,19 +116,66 @@ const Hero = () => {
             </Pressable>
             <TextInput
               style={tw`rounded-xl h-10 border-green-600 border-2 m-2 p-2 w-48`}
-              placeholder='Insert Title...'
+              placeholder={titlePH}
               placeholderTextColor={'#000000'}
               onChangeText={(newText) => setTitle(newText)}
-              defaultValue={title}
+              value={title}
             />
+            {errorMsg && (
+              <Text style={tw`text-red-600`}> Please fill in the title!!</Text>
+            )}
             <TextInput
               style={tw`rounded-xl h-10 border-green-600 border-2 m-2 p-2 w-48`}
-              placeholder='Insert Content...'
+              placeholder={contentPH}
               placeholderTextColor={'#000000'}
               onChangeText={(newText) => setContent(newText)}
-              onEndEditing={() => setElement()}
-              defaultValue={content}
+              value={content}
             />
+            <View style={tw`flex flex-row justify-around`}>
+              {isEditing ? (
+                <Pressable
+                  onPress={() => {
+                    if (editingTask) {
+                      const updatedTasks = list.map((task) =>
+                        task.id === editingTask.id
+                          ? { ...task, title: title, content: content }
+                          : task,
+                      );
+                      setList(updatedTasks);
+                      setInputStatus(false);
+                      setIsEditing(false);
+                      setEditingTask(null); // Clear the currently edited task
+                    } else {
+                      setInputStatus(false);
+                      setTitle('');
+                      setContent('');
+                      setTitlePH('Insert Title...');
+                      setContentPH('Insert Content...');
+                    }
+                  }}
+                >
+                  <Text
+                    style={tw`text-white bg-yellow-600 rounded-lg w-16 p-2 flex items-center justify-center`}
+                  >
+                    Edit Task!
+                  </Text>
+                </Pressable>
+              ) : (
+                <Pressable
+                  onPress={() =>
+                    isEditing
+                      ? (setInputStatus(false), setIsEditing(false))
+                      : setElement()
+                  }
+                >
+                  <Text
+                    style={tw`text-white bg-green-600 rounded-lg w-16 p-2 flex items-center justify-center`}
+                  >
+                    Submit Task!
+                  </Text>
+                </Pressable>
+              )}
+            </View>
           </View>
         </View>
       )}
@@ -131,9 +186,11 @@ const Hero = () => {
         {list.map((element) => {
           return (
             <Task
+              key={element.title + element.content}
               element={element}
               taskCompleted={taskCompleted}
               taskUncompleted={taskUncompleted}
+              editTask={editTask}
             />
           );
         })}
@@ -142,7 +199,12 @@ const Hero = () => {
         <View
           style={tw`w-16 h-16 bg-white rounded-full flex justify-center items-center shadow-lg `}
         >
-          <Pressable onPress={() => addElement()}>
+          <Pressable
+            onPress={() => {
+              addElement();
+              setIsEditing(false);
+            }}
+          >
             <Text style={tw`text-4xl text-green-600`}>+</Text>
           </Pressable>
         </View>

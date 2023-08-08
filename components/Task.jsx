@@ -3,17 +3,20 @@ import { Pressable, Text, View } from 'react-native';
 import Svg, { G, Path, Circle } from 'react-native-svg';
 import tw from 'tailwind-react-native-classnames';
 
-const Task = ({ element, taskCompleted, taskUncompleted }) => {
+const Task = ({ element, taskCompleted, taskUncompleted, editTask }) => {
   return (
-    <View
+    <Pressable
       index={element.id}
       style={tw`border-green-600 border-2 m-2 w-32 rounded-lg p-4`}
+      onPress={() => editTask(element)}
     >
-      <View style={tw`flex items-end min-w-full`}>
+      <View
+        style={tw`flex flex-row-reverse justify-between items-end min-w-full`}
+      >
         {element.completed ? (
           <Pressable
             onPress={() => taskUncompleted(element.id)}
-            style={tw`w-6 h-6`}
+            style={tw`w-5 h-5`}
           >
             <Svg
               fill='#43A047'
@@ -25,7 +28,7 @@ const Task = ({ element, taskCompleted, taskUncompleted }) => {
           </Pressable>
         ) : (
           <Pressable
-            style={tw`w-6 h-6`}
+            style={tw`w-5 h-5`}
             onPress={() => taskCompleted(element.id)}
           >
             <Svg
@@ -51,10 +54,10 @@ const Task = ({ element, taskCompleted, taskUncompleted }) => {
             </Svg>
           </Pressable>
         )}
+        <Text style={tw`pt-2 font-bold`}>{element.title}:</Text>
       </View>
-      <Text style={tw`pt-2 font-bold`}>{element.title}:</Text>
       <Text>{element.content}</Text>
-    </View>
+    </Pressable>
   );
 };
 
