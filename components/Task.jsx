@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Svg, { G, Path, Circle } from 'react-native-svg';
 import tw from 'tailwind-react-native-classnames';
 
 const Task = ({ element, taskCompleted, taskUncompleted, editTask }) => {
+  const [bgColor, setBgColor] = useState('');
+  useEffect(() => {
+    if (element.category == 'Important') setBgColor('#FF8A75');
+    else if (element.category == 'Personal') setBgColor('#B0E9CA');
+    else if (element.category == 'Lecture Notes') setBgColor('#D9E8FC');
+    else if (element.category == 'To-do List') setBgColor('#FFD8F4');
+    else if (element.category == 'Uncompleted') setBgColor('#FDE99D');
+    else setBgColor('#FFEADD');
+  }, []);
   return (
     <Pressable
       index={element.id}
-      style={tw`border-green-600 border-2 m-2 w-32 rounded-lg p-4`}
+      style={[
+        tw`border-green-600 border-2 m-2 w-32 rounded-lg p-4`,
+        { backgroundColor: bgColor },
+      ]}
       onPress={() => editTask(element)}
     >
       <View

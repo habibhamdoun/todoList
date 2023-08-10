@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Logo from '../components/Logo';
 import tw from 'tailwind-react-native-classnames';
 import Task from '../components/Task';
 import FilterBar from '../components/FilterBar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Hero = () => {
   const [list, setList] = useState([
@@ -13,37 +14,76 @@ const Hero = () => {
       content: 'this is content 1',
       completed: false,
       id: 0,
-      categorie: 'Personal',
+      category: 'Personal',
     },
     {
       title: 'element2',
       content: 'this is content 2',
       completed: false,
       id: 1,
-      categorie: 'Important',
+      category: 'Important',
     },
     {
       title: 'element3',
       content: 'this is content 3',
       completed: false,
       id: 2,
-      categorie: 'To-do List',
+      category: 'To-do List',
     },
     {
       title: 'element4',
       content: 'this is content 4',
       completed: false,
       id: 3,
-      categorie: 'Lecture Notes',
+      category: 'Lecture Notes',
     },
     {
       title: 'element5',
       content: 'this is content ',
       completed: false,
       id: 4,
-      categorie: 'Important',
+      category: 'Important',
     },
   ]);
+  useEffect(() => {
+    loadTasks();
+    loadCategories();
+  }, []);
+  const loadCategories = async () => {
+    try {
+      const storedCategories = await AsyncStorage.getItem('categories');
+      if (storedCategories) {
+        setCategories(JSON.parse(storedCategories));
+      }
+    } catch (error) {
+      console.log('Error loading categories:', error);
+    }
+  };
+  const saveCategories = async (categories) => {
+    try {
+      await AsyncStorage.setItem('categories', JSON.stringify(categories));
+    } catch (error) {
+      console.log('Error saving categories', error);
+    }
+  };
+  const loadTasks = async () => {
+    try {
+      const storedTasks = await AsyncStorage.getItem('tasks');
+      if (storedTasks) {
+        setList(JSON.parse(storedTasks));
+      }
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+    }
+  };
+
+  const saveTasks = async (tasks) => {
+    try {
+      await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
+    } catch (error) {
+      console.error('Error saving tasks:', error);
+    }
+  };
   const [inputStatus, setInputStatus] = useState(false);
   const [title, setTitle] = useState('');
   const [titlePH, setTitlePH] = useState('Insert title...');
@@ -72,7 +112,6 @@ const Hero = () => {
   }
   function removeCategory(cat) {
     const updatedCategories = categories.filter((category) => category != cat);
-
     setCategories(updatedCategories);
     setEditingCategories(false);
   }
@@ -99,9 +138,10 @@ const Hero = () => {
           content: content,
           completed: false,
           id: taskId,
-          categorie: selectedCategorie,
+          category: selectedCategorie,
         },
       ]);
+      saveTasks(updatedTasks);
       setTitle('');
       setContent('');
       setInputStatus(false);
@@ -122,12 +162,6 @@ const Hero = () => {
 
     setList(updatedTasks);
   }
-  // TODO: add random colors to boxes
-  //TODO: add attributes such as important / personal ... and then filter with each one
-  //TODO: add local storage
-  //TODO: add types such as list or bullet points
-  //TODO: allow user to add categories
-  // TODO: allow users to delete categories
   return (
     <View style={tw`flex justify-start items-center pt-14 flex-1 relative`}>
       {editingCategories && (
@@ -201,19 +235,19 @@ const Hero = () => {
             </Pressable>
             <TextInput
               style={tw`rounded-xl h-10 border-green-600 border-2 m-2 p-2 w-48`}
-              placeholder='Insert categorie...'
+              placeholder='Insertcategory...'
               placeholderTextColor={'#000000'}
               onChangeText={(newText) => setNewCategorie(newText)}
               value={newCategorie}
             />
             {categorieExistMsg && (
               <Text style={tw`text-red-600 p-2`}>
-                Categorie already existant.
+                category already existant.
               </Text>
             )}
             {categorieErrorMsg && (
               <Text style={tw`text-red-600 p-2`}>
-                Please fill in a Categorie name.
+                Please fill in acategory name.
               </Text>
             )}
             <Pressable
@@ -226,6 +260,7 @@ const Hero = () => {
                 } else {
                   const updatedCategories = [...categories, newCategorie];
                   setCategories(updatedCategories);
+                  saveCategories(updatedCategories);
                   setCategorieInput(false);
                   setCategorieErrorMsg(false);
                   setCategorieExistMsg(false);
@@ -236,7 +271,7 @@ const Hero = () => {
               <Text
                 style={tw`text-white bg-green-600 rounded-lg p-2 flex items-center justify-center text-center`}
               >
-                Submit Categorie
+                Submitcategory
               </Text>
             </Pressable>
           </View>
@@ -312,9 +347,10 @@ const Hero = () => {
                           : task,
                       );
                       setList(updatedTasks);
+                      saveTasks();
                       setInputStatus(false);
                       setIsEditing(false);
-                      setEditingTask(null); // Clear the currently edited task
+                      setEditingTask(null);
                     } else {
                       setInputStatus(false);
                       setTitle('');
@@ -363,7 +399,7 @@ const Hero = () => {
       </View>
       <View style={tw`flex flex-row min-w-full flex-wrap justify-around`}>
         {list.map((element) => {
-          if (element.categorie == activeCategorie) {
+          if (element.category == activeCategorie) {
             return (
               <Task
                 key={element.title + element.content}
