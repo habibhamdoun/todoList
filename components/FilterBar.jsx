@@ -7,6 +7,7 @@ const FilterBar = ({
   activeCategorie,
   activateCategorie,
   setCategorieInput,
+  editCategories,
 }) => {
   return (
     <View style={tw`h-16`}>
@@ -40,6 +41,12 @@ const FilterBar = ({
             onPress={() => setCategorieInput(true)}
           >
             <Text>+</Text>
+          </Pressable>
+          <Pressable
+            style={tw`border-2 border-gray-300 bg-white mx-1 p-2 rounded-lg`}
+            onPress={() => editCategories()}
+          >
+            <Text>✏️</Text>
           </Pressable>
         </View>
       </ScrollView>

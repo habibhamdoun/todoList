@@ -57,6 +57,7 @@ const Hero = () => {
   const [newCategorie, setNewCategorie] = useState('');
   const [categorieExistMsg, setCategorieExistMsg] = useState(false);
   const [categorieErrorMsg, setCategorieErrorMsg] = useState(false);
+  const [editingCategories, setEditingCategories] = useState(false);
   const [categories, setCategories] = useState([
     'All',
     'Personal',
@@ -69,7 +70,12 @@ const Hero = () => {
   function activateCategorie(cat) {
     setActiveCategorie(cat);
   }
+  function removeCategory(cat) {
+    const updatedCategories = categories.filter((category) => category != cat);
 
+    setCategories(updatedCategories);
+    setEditingCategories(false);
+  }
   function editTask(element) {
     setInputStatus(true);
     setIsEditing(true);
@@ -78,6 +84,9 @@ const Hero = () => {
     setTitle(element.title);
     setContent(element.content);
     setEditingTask(element);
+  }
+  function editCategories() {
+    setEditingCategories(true);
   }
 
   function setElement() {
@@ -121,6 +130,54 @@ const Hero = () => {
   // TODO: allow users to delete categories
   return (
     <View style={tw`flex justify-start items-center pt-14 flex-1 relative`}>
+      {editingCategories && (
+        <View
+          style={tw`absolute bg-white z-10 h-full w-full flex items-center justify-center`}
+        >
+          <View
+            style={tw` bg-white shadow-md h-96 rounded-xl flex items-center justify-center`}
+          >
+            <Pressable
+              onPress={() => {
+                setEditingCategories(false);
+              }}
+            >
+              <Text
+                style={tw`flex items-end min-w-full mr-16 text-right text-2xl text-green-600 font-bold`}
+              >
+                x
+              </Text>
+            </Pressable>
+            {categories.map((categorie) => {
+              return (
+                <View
+                  key={categorie}
+                  style={tw`flex flex-row justify-between w-64 p-4`}
+                >
+                  <Text>{categorie}</Text>
+                  <View style={tw`flex flex-row`}>
+                    <Pressable
+                      onPress={() => {
+                        removeCategory(categorie);
+                        setCategorieInput(true);
+                      }}
+                      style={tw`px-3`}
+                    >
+                      <Text>✏️</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => removeCategory(categorie)}
+                      style={tw`px-3`}
+                    >
+                      <Text>🗑️</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      )}
       {categorieInput && (
         <View
           style={tw`absolute bg-white z-10 h-full w-full flex items-center justify-center`}
@@ -301,6 +358,7 @@ const Hero = () => {
           activeCategorie={activeCategorie}
           activateCategorie={activateCategorie}
           setCategorieInput={setCategorieInput}
+          editCategories={editCategories}
         />
       </View>
       <View style={tw`flex flex-row min-w-full flex-wrap justify-around`}>
