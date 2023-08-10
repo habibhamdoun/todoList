@@ -93,7 +93,7 @@ const Hero = () => {
   const [errorMsg, setErrorMsg] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [categorieInput, setCategorieInput] = useState(false);
-  const [selectedCategorie, setSelectedCategorie] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [newCategorie, setNewCategorie] = useState('');
   const [categorieExistMsg, setCategorieExistMsg] = useState(false);
   const [categorieErrorMsg, setCategorieErrorMsg] = useState(false);
@@ -105,7 +105,17 @@ const Hero = () => {
     'Lecture Notes',
     'To-do List',
     'Uncompleted',
+    'Completed',
   ]);
+  const mainCategories = [
+    'All',
+    'Personal',
+    'Important',
+    'Lecture Notes',
+    'To-do List',
+    'Uncompleted',
+    'Completed',
+  ];
   const [activeCategorie, setActiveCategorie] = useState('All');
   function activateCategorie(cat) {
     setActiveCategorie(cat);
@@ -115,6 +125,7 @@ const Hero = () => {
     setCategories(updatedCategories);
     setEditingCategories(false);
   }
+
   function editTask(element) {
     setInputStatus(true);
     setIsEditing(true);
@@ -129,7 +140,7 @@ const Hero = () => {
   }
 
   function setElement() {
-    if (content != '') {
+    if (content != '' && title != '') {
       let taskId = list[list.length - 1].id + 1;
       setList((prevList) => [
         ...prevList,
@@ -138,15 +149,15 @@ const Hero = () => {
           content: content,
           completed: false,
           id: taskId,
-          category: selectedCategorie,
+          category: selectedCategory,
         },
       ]);
-      saveTasks(updatedTasks);
+      saveTasks(list);
       setTitle('');
       setContent('');
       setInputStatus(false);
       setErrorMsg(false);
-      setSelectedCategorie('');
+      setSelectedCategory('');
     } else setErrorMsg(true);
   }
   function taskCompleted(id) {
@@ -162,6 +173,8 @@ const Hero = () => {
 
     setList(updatedTasks);
   }
+  //TODO: fix the size of the splash
+  //TODO: add types such as ordered list /unordered list / text.
   return (
     <View style={tw`flex justify-start items-center pt-14 flex-1 relative`}>
       {editingCategories && (
@@ -182,33 +195,52 @@ const Hero = () => {
                 x
               </Text>
             </Pressable>
-            {categories.map((categorie) => {
-              return (
-                <View
-                  key={categorie}
-                  style={tw`flex flex-row justify-between w-64 p-4`}
+            {categories.some(
+              (categorie) => mainCategories.indexOf(categorie) === -1,
+            ) ? (
+              categories.map((categorie) => {
+                if (mainCategories.indexOf(categorie) === -1) {
+                  return (
+                    <View
+                      key={categorie}
+                      style={tw`flex flex-row justify-between w-64 p-4`}
+                    >
+                      <Text>{categorie}</Text>
+                      <View style={tw`flex flex-row`}>
+                        <Pressable
+                          onPress={() => {
+                            removeCategory(categorie);
+                            setCategorieInput(true);
+                          }}
+                          style={tw`px-3`}
+                        >
+                          <Text>✏️</Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => removeCategory(categorie)}
+                          style={tw`px-3`}
+                        >
+                          <Text>🗑️</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  );
+                }
+              })
+            ) : (
+              <View>
+                <Text>No categories available to edit :/</Text>
+                <Pressable
+                  onPress={() => {
+                    setCategorieInput(true);
+                    setEditingCategories(false);
+                  }}
+                  style={tw`text-white bg-green-600 rounded-lg p-2 flex items-center justify-center text-center`}
                 >
-                  <Text>{categorie}</Text>
-                  <View style={tw`flex flex-row`}>
-                    <Pressable
-                      onPress={() => {
-                        removeCategory(categorie);
-                        setCategorieInput(true);
-                      }}
-                      style={tw`px-3`}
-                    >
-                      <Text>✏️</Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => removeCategory(categorie)}
-                      style={tw`px-3`}
-                    >
-                      <Text>🗑️</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              );
-            })}
+                  <Text style={tw`text-white`}>Add category!</Text>
+                </Pressable>
+              </View>
+            )}
           </View>
         </View>
       )}
@@ -235,7 +267,7 @@ const Hero = () => {
             </Pressable>
             <TextInput
               style={tw`rounded-xl h-10 border-green-600 border-2 m-2 p-2 w-48`}
-              placeholder='Insertcategory...'
+              placeholder='Insert Category...'
               placeholderTextColor={'#000000'}
               onChangeText={(newText) => setNewCategorie(newText)}
               value={newCategorie}
@@ -271,7 +303,7 @@ const Hero = () => {
               <Text
                 style={tw`text-white bg-green-600 rounded-lg p-2 flex items-center justify-center text-center`}
               >
-                Submitcategory
+                Submit category
               </Text>
             </Pressable>
           </View>
@@ -307,9 +339,12 @@ const Hero = () => {
               value={title}
             />
             {errorMsg && (
-              <Text style={tw`text-red-600`}> Please fill in the title!!</Text>
+              <Text style={tw`text-red-600`}>
+                Please fill in all the fields!!
+              </Text>
             )}
             <TextInput
+              multiline={true}
               style={tw`rounded-xl h-10 border-green-600 border-2 m-2 p-2 w-48`}
               placeholder={contentPH}
               placeholderTextColor={'#000000'}
@@ -321,8 +356,8 @@ const Hero = () => {
             >
               <Picker
                 style={tw`w-28 text-white`}
-                selectedValue={selectedCategorie}
-                onValueChange={(itemValue) => setSelectedCategorie(itemValue)}
+                selectedValue={selectedCategory}
+                onValueChange={(itemValue) => setSelectedCategory(itemValue)}
               >
                 {categories.map((categorie) => {
                   return (
@@ -338,34 +373,53 @@ const Hero = () => {
 
             <View style={tw`flex flex-row justify-around`}>
               {isEditing ? (
-                <Pressable
-                  onPress={() => {
-                    if (editingTask) {
-                      const updatedTasks = list.map((task) =>
-                        task.id === editingTask.id
-                          ? { ...task, title: title, content: content }
-                          : task,
+                <View style={tw`flex flex-row`}>
+                  <Pressable
+                    style={tw`mx-2`}
+                    onPress={() => {
+                      if (editingTask) {
+                        const updatedTasks = list.map((task) =>
+                          task.id === editingTask.id
+                            ? { ...task, title: title, content: content }
+                            : task,
+                        );
+                        setList(updatedTasks);
+                        saveTasks();
+                        setInputStatus(false);
+                        setIsEditing(false);
+                        setEditingTask(null);
+                      } else {
+                        setInputStatus(false);
+                        setTitle('');
+                        setContent('');
+                        setTitlePH('Insert Title...');
+                        setContentPH('Insert Content...');
+                      }
+                    }}
+                  >
+                    <Text
+                      style={tw`text-white bg-yellow-600 rounded-lg w-16 p-2 flex items-center justify-center`}
+                    >
+                      Edit Task!
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      const updatedTasks = list.filter(
+                        (element) => element != editingTask,
                       );
                       setList(updatedTasks);
-                      saveTasks();
+                      saveTasks(updatedTasks);
                       setInputStatus(false);
-                      setIsEditing(false);
-                      setEditingTask(null);
-                    } else {
-                      setInputStatus(false);
-                      setTitle('');
-                      setContent('');
-                      setTitlePH('Insert Title...');
-                      setContentPH('Insert Content...');
-                    }
-                  }}
-                >
-                  <Text
-                    style={tw`text-white bg-yellow-600 rounded-lg w-16 p-2 flex items-center justify-center`}
+                    }}
                   >
-                    Edit Task!
-                  </Text>
-                </Pressable>
+                    <Text
+                      style={tw`text-white bg-red-600 rounded-lg w-16 p-2 flex items-center justify-center`}
+                    >
+                      Delete Task!
+                    </Text>
+                  </Pressable>
+                </View>
               ) : (
                 <Pressable
                   onPress={() =>
@@ -430,6 +484,17 @@ const Hero = () => {
                   editTask={editTask}
                 />
               );
+          } else if (activeCategorie == 'Completed') {
+            if (element.completed == true)
+              return (
+                <Task
+                  key={element.title + element.content}
+                  element={element}
+                  taskCompleted={taskCompleted}
+                  taskUncompleted={taskUncompleted}
+                  editTask={editTask}
+                />
+              );
           }
         })}
       </View>
@@ -440,6 +505,10 @@ const Hero = () => {
           <Pressable
             onPress={() => {
               setInputStatus(true);
+              setTitle('');
+              setContent('');
+              setTitlePH('Insert title...');
+              setContentPH('Insert Content...');
               setIsEditing(false);
             }}
           >
