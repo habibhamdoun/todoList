@@ -23,7 +23,10 @@ const Task = ({ element, taskCompleted, taskUncompleted, editTask }) => {
     >
       <View style={tw`flex flex-row justify-between items-end min-w-full`}>
         <Text style={tw`pt-2 font-bold`}>
-          {element.title.substring(0, 10) + '... '}:
+          {element.title.length > 10
+            ? element.title.substring(0, 10) + '... '
+            : element.title}
+          :
         </Text>
         <View style={tw`flex flex-row items-center`}>
           <Pressable style={tw`w-5 h-5`} onPress={() => editTask(element)}>
