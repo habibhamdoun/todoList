@@ -174,7 +174,6 @@ const Hero = () => {
     setList(updatedTasks);
   }
   //TODO: fix the size of the splash
-  //TODO: add types such as ordered list /unordered list / text.
   return (
     <View style={tw`flex justify-start items-center pt-14 flex-1 relative`}>
       {editingCategories && (
