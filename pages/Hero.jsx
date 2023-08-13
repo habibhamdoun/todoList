@@ -91,7 +91,6 @@ const Hero = () => {
   const [contentPH, setContentPH] = useState('Insert content...');
   const [isEditing, setIsEditing] = useState(false);
   const [errorMsg, setErrorMsg] = useState(false);
-  const [titleLongError, setTitleLongError] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [categorieInput, setCategorieInput] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(false);
@@ -99,7 +98,6 @@ const Hero = () => {
   const [categorieExistMsg, setCategorieExistMsg] = useState(false);
   const [categorieErrorMsg, setCategorieErrorMsg] = useState(false);
   const [editingCategories, setEditingCategories] = useState(false);
-  const [categoryLongError, setCategoryLongError] = useState(false);
   const [categories, setCategories] = useState([
     'All',
     'Personal',
@@ -126,7 +124,6 @@ const Hero = () => {
     setCategorieExistMsg(false);
     setCategorieErrorMsg(false);
     setEditingCategories(false);
-    setCategoryLongError(false);
   }
   function removeCategory(cat) {
     const updatedCategories = categories.filter((category) => category != cat);
@@ -148,10 +145,6 @@ const Hero = () => {
   }
 
   function setElement() {
-    if (title.length > 10) {
-      setTitleLongError(true);
-      return;
-    }
     if (content != '' && title != '') {
       let taskId = list[list.length - 1].id + 1;
       setList((prevList) => [
@@ -265,7 +258,6 @@ const Hero = () => {
               onPress={() => {
                 setCategorieErrorMsg(false);
                 setCategorieExistMsg(false);
-                setCategoryLongError(false);
                 setCategorieInput(false);
                 setNewCategorie('');
               }}
@@ -288,11 +280,7 @@ const Hero = () => {
                 category already existant.
               </Text>
             )}
-            {categoryLongError && (
-              <Text style={tw`text-red-600 p-2`}>
-                Category name too long {'< 10'}
-              </Text>
-            )}
+
             {categorieErrorMsg && (
               <Text style={tw`text-red-600 p-2`}>
                 Please fill in acategory name.
@@ -305,8 +293,6 @@ const Hero = () => {
                   return;
                 } else if (newCategorie == '') {
                   setCategorieErrorMsg(true);
-                } else if (newCategorie.length > 10) {
-                  setCategoryLongError(true);
                 } else {
                   const updatedCategories = [...categories, newCategorie];
                   setCategories(updatedCategories);
@@ -337,7 +323,6 @@ const Hero = () => {
             <Pressable
               onPress={() => {
                 setInputStatus(false);
-                setTitleLongError(false);
                 setTitle('');
                 setContent('');
                 setTitlePH('Insert Title...');
@@ -362,9 +347,6 @@ const Hero = () => {
               <Text style={tw`text-red-600`}>
                 Please fill in all the fields!!
               </Text>
-            )}
-            {titleLongError && (
-              <Text style={tw`text-red-600`}>Title too long {'< 10'}</Text>
             )}
             <TextInput
               multiline={true}
@@ -400,9 +382,16 @@ const Hero = () => {
                   <Pressable
                     style={tw`mx-2`}
                     onPress={() => {
-                      if (title.length > 10) {
-                        setTitleLongError(true);
-                        return;
+                      if (
+                        newCategorie != '' ||
+                        newCategorie != null ||
+                        newCategorie != undefined
+                      ) {
+                        setInputStatus(false);
+                        setTitle('');
+                        setContent('');
+                        setTitlePH('Insert Title...');
+                        setContentPH('Insert Content...');
                       } else if (editingTask) {
                         const updatedTasks = list.map((task) =>
                           task.id === editingTask.id
@@ -529,7 +518,6 @@ const Hero = () => {
             setContentPH('Insert Content...');
             setIsEditing(false);
             setErrorMsg(false);
-            setTitleLongError(false);
           }}
         >
           <View
