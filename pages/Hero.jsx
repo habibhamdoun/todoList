@@ -463,6 +463,11 @@ const Hero = () => {
       </View>
       <View style={tw`flex flex-row min-w-full flex-wrap justify-around`}>
         {list.map((element) => {
+          if (list.length === 0) {
+            return (
+              <Text>No tasks added yet,Add tasks using the "+" below!!</Text>
+            );
+          }
           if (element.category == activeCategorie) {
             return (
               <Task
