@@ -91,13 +91,15 @@ const Hero = () => {
   const [contentPH, setContentPH] = useState('Insert content...');
   const [isEditing, setIsEditing] = useState(false);
   const [errorMsg, setErrorMsg] = useState(false);
+  const [titleLongError, setTitleLongError] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [categorieInput, setCategorieInput] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(false);
   const [newCategorie, setNewCategorie] = useState('');
   const [categorieExistMsg, setCategorieExistMsg] = useState(false);
   const [categorieErrorMsg, setCategorieErrorMsg] = useState(false);
   const [editingCategories, setEditingCategories] = useState(false);
+  const [categoryLongError, setCategoryLongError] = useState(false);
   const [categories, setCategories] = useState([
     'All',
     'Personal',
@@ -120,6 +122,12 @@ const Hero = () => {
   function activateCategorie(cat) {
     setActiveCategorie(cat);
   }
+  function clearCategoryErrors() {
+    setCategorieExistMsg(false);
+    setCategorieErrorMsg(false);
+    setEditingCategories(false);
+    setCategoryLongError(false);
+  }
   function removeCategory(cat) {
     const updatedCategories = categories.filter((category) => category != cat);
     setCategories(updatedCategories);
@@ -140,6 +148,10 @@ const Hero = () => {
   }
 
   function setElement() {
+    if (title.length > 10) {
+      setTitleLongError(true);
+      return;
+    }
     if (content != '' && title != '') {
       let taskId = list[list.length - 1].id + 1;
       setList((prevList) => [
@@ -173,7 +185,6 @@ const Hero = () => {
 
     setList(updatedTasks);
   }
-  //TODO: fix the size of the splash
   return (
     <View style={tw`flex justify-start items-center pt-14 flex-1 relative`}>
       {editingCategories && (
@@ -254,6 +265,7 @@ const Hero = () => {
               onPress={() => {
                 setCategorieErrorMsg(false);
                 setCategorieExistMsg(false);
+                setCategoryLongError(false);
                 setCategorieInput(false);
                 setNewCategorie('');
               }}
@@ -276,6 +288,11 @@ const Hero = () => {
                 category already existant.
               </Text>
             )}
+            {categoryLongError && (
+              <Text style={tw`text-red-600 p-2`}>
+                Category name too long {'< 10'}
+              </Text>
+            )}
             {categorieErrorMsg && (
               <Text style={tw`text-red-600 p-2`}>
                 Please fill in acategory name.
@@ -288,6 +305,8 @@ const Hero = () => {
                   return;
                 } else if (newCategorie == '') {
                   setCategorieErrorMsg(true);
+                } else if (newCategorie.length > 10) {
+                  setCategoryLongError(true);
                 } else {
                   const updatedCategories = [...categories, newCategorie];
                   setCategories(updatedCategories);
@@ -318,10 +337,12 @@ const Hero = () => {
             <Pressable
               onPress={() => {
                 setInputStatus(false);
+                setTitleLongError(false);
                 setTitle('');
                 setContent('');
                 setTitlePH('Insert Title...');
                 setContentPH('Insert Content...');
+                setErrorMsg(false);
               }}
             >
               <Text
@@ -341,6 +362,9 @@ const Hero = () => {
               <Text style={tw`text-red-600`}>
                 Please fill in all the fields!!
               </Text>
+            )}
+            {titleLongError && (
+              <Text style={tw`text-red-600`}>Title too long {'< 10'}</Text>
             )}
             <TextInput
               multiline={true}
@@ -376,7 +400,10 @@ const Hero = () => {
                   <Pressable
                     style={tw`mx-2`}
                     onPress={() => {
-                      if (editingTask) {
+                      if (title.length > 10) {
+                        setTitleLongError(true);
+                        return;
+                      } else if (editingTask) {
                         const updatedTasks = list.map((task) =>
                           task.id === editingTask.id
                             ? { ...task, title: title, content: content }
@@ -420,13 +447,7 @@ const Hero = () => {
                   </Pressable>
                 </View>
               ) : (
-                <Pressable
-                  onPress={() =>
-                    isEditing
-                      ? (setInputStatus(false), setIsEditing(false))
-                      : setElement()
-                  }
-                >
+                <Pressable onPress={() => setElement()}>
                   <Text
                     style={tw`text-white bg-green-500 rounded-lg  p-2 flex items-center justify-center border-2 border-gray-300`}
                   >
@@ -448,6 +469,7 @@ const Hero = () => {
           activateCategorie={activateCategorie}
           setCategorieInput={setCategorieInput}
           editCategories={editCategories}
+          clearCategoryErrors={clearCategoryErrors}
         />
       </View>
       <View style={tw`flex flex-row min-w-full flex-wrap justify-around`}>
@@ -498,22 +520,24 @@ const Hero = () => {
         })}
       </View>
       <View style={tw`flex items-end min-w-full mr-5`}>
-        <View
-          style={tw`w-16 h-16 bg-white rounded-full flex justify-center items-center shadow-lg `}
+        <Pressable
+          onPress={() => {
+            setInputStatus(true);
+            setTitle('');
+            setContent('');
+            setTitlePH('Insert title...');
+            setContentPH('Insert Content...');
+            setIsEditing(false);
+            setErrorMsg(false);
+            setTitleLongError(false);
+          }}
         >
-          <Pressable
-            onPress={() => {
-              setInputStatus(true);
-              setTitle('');
-              setContent('');
-              setTitlePH('Insert title...');
-              setContentPH('Insert Content...');
-              setIsEditing(false);
-            }}
+          <View
+            style={tw`w-16 h-16 bg-white rounded-full flex justify-center items-center shadow-lg `}
           >
             <Text style={tw`text-4xl text-green-600`}>+</Text>
-          </Pressable>
-        </View>
+          </View>
+        </Pressable>
       </View>
     </View>
   );

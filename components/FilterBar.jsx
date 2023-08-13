@@ -8,6 +8,7 @@ const FilterBar = ({
   activateCategorie,
   setCategorieInput,
   editCategories,
+  clearCategoryErrors,
 }) => {
   return (
     <View style={tw`h-16`}>
@@ -38,7 +39,9 @@ const FilterBar = ({
           })}
           <Pressable
             style={tw`border-2 border-gray-300 bg-white mx-1 p-2 rounded-lg`}
-            onPress={() => setCategorieInput(true)}
+            onPress={() => {
+              clearCategoryErrors(), setCategorieInput(true);
+            }}
           >
             <Text>+</Text>
           </Pressable>
